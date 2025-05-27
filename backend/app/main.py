@@ -20,7 +20,8 @@ def create_tables():
 
 app = FastAPI(
     title="Appointment Booking System API",
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    docs_url=f"{settings.API_V1_STR}/docs"
 )
 
 # Set all CORS enabled origins
