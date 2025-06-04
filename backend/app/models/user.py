@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.orm import relationship
 from app.db.base_class import Base
 
 class User(Base):
@@ -9,4 +10,4 @@ class User(Base):
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
     # TODO: Add relationship to appointments
-    # appointments = relationship("Appointment", back_populates="owner")
+    appointments = relationship("Appointment", back_populates="owner")
