@@ -21,18 +21,50 @@ def create_tables():
 app = FastAPI(
     title="Appointment Booking System API",
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    docs_url=f"{settings.API_V1_STR}/docs"
+    docs_url=f"{settings.API_V1_STR}/docs",
+    redoc_url=f"{settings.API_V1_STR}/redoc"
 )
 
-# Set all CORS enabled origins
+# ---- START CORS DEBUG ----
+print("--- app/main.py: Initializing CORS Middleware ---")
+print(f"Raw settings.BACKEND_CORS_ORIGINS from config: {settings.BACKEND_CORS_ORIGINS}")
+print(f"Type of settings.BACKEND_CORS_ORIGINS: {type(settings.BACKEND_CORS_ORIGINS)}")
+
+processed_origins = []
 if settings.BACKEND_CORS_ORIGINS:
+    if isinstance(settings.BACKEND_CORS_ORIGINS, list):
+        # This branch should be hit if you used Option 1 (JSON string in .env)
+        # and removed the custom validator in config.py
+        processed_origins = [str(origin).rstrip('/') for origin in settings.BACKEND_CORS_ORIGINS]
+        print(f"Processing BACKEND_CORS_ORIGINS as a list of Pydantic AnyHttpUrl objects.")
+    elif isinstance(settings.BACKEND_CORS_ORIGINS, str):
+        # This branch would be hit if BACKEND_CORS_ORIGINS was still a plain string
+        # (e.g., if Option 2 validator wasn't fully working or removed,
+        # and .env had comma-separated string)
+        print(f"Processing BACKEND_CORS_ORIGINS as a string: '{settings.BACKEND_CORS_ORIGINS}' - This might be incorrect if it's not a list of URLs.")
+        # Attempt to split if it looks like a comma-separated list
+        if ',' in settings.BACKEND_CORS_ORIGINS:
+             processed_origins = [origin.strip().rstrip('/') for origin in settings.BACKEND_CORS_ORIGINS.split(',')]
+        elif settings.BACKEND_CORS_ORIGINS.strip(): # Single origin string
+             processed_origins = [settings.BACKEND_CORS_ORIGINS.strip().rstrip('/')]
+
+print(f"Final processed_origins for CORSMiddleware: {processed_origins}")
+print(f"Types in processed_origins: {[type(o) for o in processed_origins]}")
+print("--- END CORS DEBUG ---")
+# ---- END CORS DEBUG ----
+
+# Set all CORS enabled origins
+# Ensure processed_origins is not empty if it's critical, or handle default
+if processed_origins: # Only add middleware if we have valid origins
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=processed_origins,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["*"], 
+        allow_headers=["*"], 
     )
+else:
+    print("WARNING: No valid CORS origins processed. CORSMiddleware NOT added or using default restrictive behavior.")
 
 @app.on_event("startup")
 async def startup_event():

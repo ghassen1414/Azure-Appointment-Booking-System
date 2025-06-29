@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.models.appointment import Appointment as AppointmentModel
 from app.schemas.appointment import AppointmentCreate, AppointmentUpdate
+import datetime
+from app.models.appointment import AppointmentStatus
 
 def create_appointment(
         db: Session, *, appointment_in: AppointmentCreate, owner_id: int
@@ -71,4 +73,29 @@ def delete_appointment(
     # For consistency with other CRUDs returning the model, we return it here.
     return db_appointment
 
-# mabybe add a function for double_bookigns
+def get_overlapping_appointments(
+    db: Session,
+    *,
+    #owner_id: int,
+    start_time: datetime.datetime,
+    end_time: datetime.datetime,
+    exclude_appointment_id: Optional[int] = None # To exclude current appointment when updating
+) -> List[AppointmentModel]:
+    """
+    Finds appointments FOR ANY USER that overlap with the given time slot.
+    This assumes a single provider/resource system.
+    """
+    query = db.query(AppointmentModel).filter(
+        #AppointmentModel.owner_id == owner_id,
+        AppointmentModel.start_time < end_time,
+        AppointmentModel.end_time > start_time,
+        # Consider only appointments that are 'confirmed' or 'pending' as blocking a slot
+        # Adjust statuses as per your business logic
+        AppointmentModel.status.in_([AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING_CONFIRMATION])
+    )
+
+    if exclude_appointment_id:
+        query = query.filter(AppointmentModel.id != exclude_appointment_id)
+
+    return query.all()
+

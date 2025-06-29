@@ -6,6 +6,8 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import BookAppointment from "./pages/BookAppointment";
 import "./App.css";
+import PrivateRoute from './components/PrivateRoute';
+import ManageAppointments from "./pages/ManageAppointment"; // Import the ManageAppointments page
 
 function App() {
   return (
@@ -15,8 +17,11 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/book" element={<BookAppointment />} />
+        <Route element={<PrivateRoute />}> {/* Wrap protected routes */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/book" element={<BookAppointment />} />
+          <Route path="/manage" element={<ManageAppointments />} />
+        </Route>
       </Routes>
     </Router>
   );
