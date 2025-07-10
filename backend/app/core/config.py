@@ -4,21 +4,19 @@ from typing import List, Union # Ensure Union is imported
 from pydantic import AnyHttpUrl, field_validator # field_validator for Pydantic v2
 from pydantic_settings import BaseSettings
 
-dotenv_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), '.env')
-load_dotenv(dotenv_path)
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     SECRET_KEY: str = os.getenv("SECRET_KEY", "a_default_secret_key_if_not_set")
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "")
+    DATABASE_URL: str
     
     ACS_CONNECTION_STRING: str = os.getenv("ACS_CONNECTION_STRING", "") # From previous steps
     ACS_SENDER_ADDRESS: str = os.getenv("ACS_SENDER_ADDRESS", "")   # From previous steps
 
     # CORS
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [] # Default to empty list
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
     #@field_validator("BACKEND_CORS_ORIGINS", mode='before') # mode='before' for Pydantic v2
     @classmethod # Add classmethod decorator
@@ -32,6 +30,7 @@ class Settings(BaseSettings):
 
     class Config:
         case_sensitive = True
-        # env_file = ".env" # pydantic-settings loads .env by default if it exists
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
 settings = Settings()

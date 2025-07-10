@@ -11,7 +11,7 @@ from app.schemas.token import TokenData
 import app.crud.crud_user as crud_user
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/users/token" # Ensure this matches your login route
+    tokenUrl=f"{settings.API_V1_STR}/users/token" # Ensure this matches login route
 )
 
 def get_current_user(
