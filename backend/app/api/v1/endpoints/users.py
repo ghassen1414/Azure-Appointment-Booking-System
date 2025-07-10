@@ -9,7 +9,7 @@ from app.core.security import create_access_token, verify_password
 from app.schemas.token import Token
 from app.deps import get_current_active_user # We'll create this next
 
-router = APIRouter()
+router = APIRouter(redirect_slashes=False)
 
 @router.post("/register", response_model=user_schemas.User)
 def register_user(
